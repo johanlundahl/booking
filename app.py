@@ -25,7 +25,7 @@ def api_customers():
     if request.method == 'GET':
         with db:
             customers = db.customers()
-            return Response(response=Encoder().encode(customers), mimetype='application/json')
+            return send.ok(customers)
     elif request.method == 'POST':
         content = request.get_json()
         if 'name' in content:
@@ -37,7 +37,7 @@ def api_customers():
             customer = Customer(name, contact, phone, email)
             with db:
                 db.add(customer)
-            return Response(response=Encoder().encode(customer), status=http.CREATED, mimetype='application/json')
+            return send.created(customer)
     else:
         return abort(http.BAD_REQUEST)
 
@@ -53,13 +53,13 @@ def api_customer(customer_id):
         customer = None
         with db:
             customer = db.customer(customer_id)
-        return Response(response=Encoder().encode(customer), status=http.OK, mimetype='application/json')
+        return send.ok(customer)
 
     elif request.method == 'DELETE':
         with db:
             customer = db.customer(customer_id)
             db.delete(customer)
-        return '', http.OK
+        return send.deleted()
     elif request.method == 'PUT':
         content = request.get_json()
         if content and all(x in content for x in ['name', 'contact', 'company', 'email', 'phone', 'address', 'postal_code', 'city']):
@@ -72,7 +72,7 @@ def api_customer(customer_id):
                 customer.address = content['address']
                 customer.postal_code = content['postal_code']
                 customer.city = content['city']
-                return Response(response=Encoder().encode(customer), status=http.OK, mimetype='application/json')
+                return send.ok(customer)
         else:
             return abort(http.BAD_REQUEST)
     elif request.method == 'PATCH':
@@ -87,7 +87,7 @@ def api_customer(customer_id):
                 customer.address = content['address'] if 'address' in content else customer.address
                 customer.postal_code = content['postal_code'] if 'postal_code' in content else customer.postal_code
                 customer.city = content['city'] if 'city' in content else customer.city
-                return Response('', status=http.NO_CONTENT)
+                return send.patched()
         else:
             return abort(http.BAD_REQUEST)
     else:
@@ -98,7 +98,7 @@ def api_customer_cars(customer_id):
     if request.method == 'GET':
         with db:
             customer = db.customer(customer_id)
-            return Response(response=Encoder().encode(customer.cars), status=http.OK, mimetype='application/json')
+            return send.ok(customer.cars)
     elif request.method == 'POST':
         content = request.get_json()
         if 'reg' in content:
@@ -107,7 +107,7 @@ def api_customer_cars(customer_id):
                 customer = db.customer(customer_id)
                 db.add(car)
                 customer.cars.append(car)
-            return Response(response=Encoder().encode(car), status=http.CREATED, mimetype='application/json')
+            return send.created(car)
         else:
             return abort(http.BAD_REQUEST)
     else:
@@ -120,14 +120,14 @@ def api_customer_car(customer_id, car_id):
             car = db.car(customer_id, car_id)
             if car is None:
                 return '', http.NOT_FOUND
-            return Response(response=Encoder().encode(car), status=http.OK, mimetype='application/json')
+            return send.ok(car)
     elif request.method == 'PATCH':
         content = request.get_json()
         if 'reg' in content:
             with db:
                 car = db.car(customer_id, car_id)
                 car.reg = content['reg'] if 'reg' in content else car.reg
-            return Response(response='', status=http.NO_CONTENT)
+            return send.patched()
     else:
         return abort(http.FORBIDDEN)
 
@@ -138,7 +138,7 @@ def api_customer_car_reservations(customer_id, car_id):
             car = db.car(customer_id, car_id)
             if car is None:
                 return '', http.NOT_FOUND
-            return Response(response=Encoder().encode(car.reservations), status=http.OK, mimetype='application/json')
+            return send.ok(car.reservations)
     elif request.method == 'POST':
         content = request.get_json()
         if "date" in content and "pickup_at" in content and "return_at" in content:
@@ -150,7 +150,7 @@ def api_customer_car_reservations(customer_id, car_id):
                 car = db.car(customer_id, car_id)
                 print('FOUND CAR:', car)
                 car.reservations.append(reservation)
-            return Response(response=Encoder().encode(reservation), status=http.CREATED, mimetype='application/json')
+            return send.created(reservation)
     else:
         return abort(http.FORBIDDEN)
 
@@ -161,7 +161,7 @@ def api_customer_car_reservation(customer_id, car_id, reservation_id):
             reservation = db.reservation(reservation_id)
             if reservation is None:
                 return '', http.NOT_FOUND
-            return Response(response=Encoder().encode(reservation), status=http.OK, mimetype='application/json')
+            return send.ok(reservation)
     elif request.method == 'PATCH':
         content = request.get_json()
         if any([x in content for x in ['date', 'pickup_at', 'return_at']]):
@@ -172,14 +172,14 @@ def api_customer_car_reservation(customer_id, car_id, reservation_id):
                 reservation.date = content['date'] if 'date' in content else reservation.date
                 reservation.pickup_at = content['pickup_at'] if 'pickup_at' in content else reservation.pickup_at
                 reservation.return_at = content['return_at'] if 'return_at' in content else reservation.return_at
-            return Response(response='', status=http.NO_CONTENT)
+            return send.patched()
         else:
             return abort(http.BAD_REQUEST)
     elif request.method == 'DELETE':
         with db:
             reservation = db.reservation(reservation_id)
             db.delete(reservation)
-            return '', http.OK
+            return send.deleted()
     else:
         return abort(http.FORBIDDEN)
 
@@ -194,8 +194,7 @@ def api_reservations():
                 reservations = list(filter(lambda x: x.date == date, reservations))
             if customer_id:
                 reservations = list(filter(lambda x: x.customer_id == customer_id, reservations))
-            
-            return Response(response=Encoder().encode(reservations), status=http.OK, mimetype='application/json')
+            return send.ok(reservations)
     else:
         return abort(http.FORBIDDEN)
 
@@ -208,7 +207,7 @@ def api_cars():
             cars = db.cars()
             if customer_id:
                 cars = list(filter(lambda x: x.customer_id == customer_id, cars))
-            return Response(response=Encoder().encode(cars), mimetype='application/json')
+            return send.ok(cars)
     return abort(http.FORBIDDEN)
 
 
