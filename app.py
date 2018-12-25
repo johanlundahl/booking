@@ -4,9 +4,9 @@ from model.contact import Contact
 from model.car import Car
 from model.reservation import Reservation
 from model.driver import Driver
-from api.jsoncoder import Encoder
-from api.http_status_code import HTTPStatusCode as http
-from api.answer import Send as send
+from http.jsoncoder import Encoder
+from http.http_status_code import HTTPStatusCode as http
+from http.answer import Send as send
 from db.orm import MyDb
 
 app = Flask(__name__)
