@@ -7,9 +7,10 @@ from com.jsoncoder import Encoder
 from com.http_status_code import HTTPStatusCode as http
 from com.answer import Send as send
 from db.orm import MyDb
+import config
 
 app = Flask(__name__)
-db = MyDb('sqlite:///sqlalchemy_ex.db')
+db = MyDb(config.db_uri)
 
 @app.route('/api', methods=['GET'])
 def api_root():
