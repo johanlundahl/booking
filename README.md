@@ -16,8 +16,26 @@ $ git clone https://github.com/johanlundahl/booking
 
 ## Requirements
 
-Install required python modeules
+Install required python modules
 
 ```
 $ pip install -r requirements.txt
+```
+
+Create a config.py file in the root to store application specific parameters required by the application
+```
+db_uri = 'sqlite:///sqlalchemy.db'
+```
+
+Create the database 
+```
+$ python db_cmd.py --action=create
+```
+
+## Run
+
+To run the application type
+
+```
+$ python app.py
 ```
