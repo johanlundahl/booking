@@ -1,12 +1,11 @@
 from flask import Flask, render_template, url_for, redirect, send_file, jsonify, abort, request, json, Response
 from model.customer import Customer
-from model.contact import Contact
 from model.car import Car
 from model.reservation import Reservation
 from model.driver import Driver
-from http.jsoncoder import Encoder
-from http.http_status_code import HTTPStatusCode as http
-from http.answer import Send as send
+from com.jsoncoder import Encoder
+from com.http_status_code import HTTPStatusCode as http
+from com.answer import Send as send
 from db.orm import MyDb
 
 app = Flask(__name__)

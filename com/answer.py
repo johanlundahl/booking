@@ -1,6 +1,6 @@
 from flask import Response
-from http.http_status_code import HTTPStatusCode as http
-from http.jsoncoder import Encoder
+from com.http_status_code import HTTPStatusCode as http
+from com.jsoncoder import Encoder
 
 class Send(Response):
     
