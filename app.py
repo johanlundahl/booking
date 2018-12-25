@@ -256,9 +256,11 @@ if __name__ == '__main__':
 
 
 # --- TODO ---
+# Add port as an input parameter
+# Add HTTPS
+# Add Basic Auth
 # template pattern???
-# eget response objekt
 # pagination on /api/reservations and /api/cars?
 # make sure that reservation with id is child or car with id
-#/api/drivers
-#/api/users
+# /api/drivers
+# Add Users /api/users

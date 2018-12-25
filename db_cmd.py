@@ -17,3 +17,7 @@ if __name__ == '__main__':
         commands.drop_tables()
     elif args.action == 'structure':
         commands.structure()
+
+
+# Rename --action to --db
+# Add clean that removes db file
