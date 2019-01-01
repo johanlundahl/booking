@@ -2,13 +2,14 @@ from sqlalchemy import create_engine
 from sqlalchemy import inspect
 from sqlalchemy import MetaData
 from db.orm import MyDb
-from model.id import Base
+from model.base import Base
 from model.car import Car
 from model.customer import Customer
 from model.reservation import Reservation
 from model.driver import Driver
+import config
 
-uri = 'sqlite:///sqlalchemy_ex.db'
+uri = config.db_uri
 
 def get_engine():
     return create_engine(uri)
