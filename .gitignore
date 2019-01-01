@@ -2,3 +2,4 @@
 *.pyc
 *.txt
 config.py
+*.DS_Store
