@@ -14,8 +14,8 @@ class Reservation(model.base.Base):
     car_id = Column(Integer, ForeignKey('cars.id'))
     car = relationship('Car', back_populates = 'reservations')
 
-    pickup_by = relationship('Driver')
     pickup_driver = Column(Integer, ForeignKey('drivers.id'))
+    pickup_by = relationship('Driver', back_populates = 'pickups')
     
     def __init__(self, date, pickup_at, return_at):
         self.date = date
