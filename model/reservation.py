@@ -17,6 +17,9 @@ class Reservation(model.base.Base):
     pickup_driver = Column(Integer, ForeignKey('drivers.id'))
     pickup_by = relationship('Driver', back_populates = 'pickups')
     
+    return_driver = Column(Integer, ForeignKey('drivers.id'))
+    return_by = relationship('Driver', back_populates = 'returns')
+
     def __init__(self, date, pickup_at, return_at):
         self.date = date
         self.pickup_at = pickup_at

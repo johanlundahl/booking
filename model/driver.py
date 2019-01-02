@@ -8,6 +8,7 @@ class Driver(model.base.Base):
     name = Column(String(100), nullable = False)
 
     pickups = relationship('Reservation', back_populates = "pickup_by")
+    returns = relationship('Reservation', back_populates = "return_by")
 
     def __init__(self, name):
         self.name = name
