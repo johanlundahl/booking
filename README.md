@@ -41,3 +41,6 @@ To run the application type
 ```
 $ python app.py
 ```
+
+The endpoints of the API are available at http://localhost:5000/api.
+
