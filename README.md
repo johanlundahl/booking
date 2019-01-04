@@ -25,7 +25,8 @@ $ pip install -r requirements.txt
 
 Create a config.py file in the root to store application specific parameters required by the application
 ```
-db_uri = 'sqlite:///sqlalchemy.db'
+db_name = 'sqlalchemy.db'
+db_uri = 'sqlite:///{}'.format(db_name)
 ```
 
 Create the database 
