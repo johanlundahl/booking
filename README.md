@@ -30,7 +30,7 @@ db_uri = 'sqlite:///sqlalchemy.db'
 
 Create the database 
 ```
-$ python db_cmd.py --action=create
+$ python cmd.py -create
 ```
 
 ## Run
