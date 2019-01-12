@@ -9,18 +9,17 @@ from model.driver import Driver
 class MyDb():
     def __init__(self, uri):
         self.engine = create_engine(uri)
-        
-    def __enter__(self):
         self.DBSession = sessionmaker(bind=self.engine)
         self.session = self.DBSession()
-        return self
+
+    def __enter__(self):
+        pass
 
     def __exit__(self, *args):
         self.session.commit()
 
     def add(self, item):
         self.session.add(item)
-        return item
 
     def delete(self, item):
         self.session.delete(item)
