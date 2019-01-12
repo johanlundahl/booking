@@ -30,7 +30,7 @@ class Customer(model.base.Base):
     def to_json(self):
         result = {'href': self.link}
         result = {**result, **{k: v for k, v in self.__dict__.items()}}
-        result['links'] = [{'rel': 'reservations', 'href': '/api/reservations?customer_id'.format(self.id)}, 
+        result['links'] = [{'rel': 'reservations', 'href': '/api/reservations?customer_id={}'.format(self.id)}, 
                         {'rel': 'cars', 'href': '{}/cars'.format(self.link)}]
         del result['_sa_instance_state']
         return result
