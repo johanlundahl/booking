@@ -10,15 +10,13 @@ class Reservation(model.base.Base):
     returned = Column(Boolean, nullable = False)
     pickup_at = Column(String(5), nullable = False)
     return_at = Column(String(5), nullable = False)
-
+    pickup_driver_id = Column(Integer, ForeignKey('drivers.id'))
+    return_driver_id = Column(Integer, ForeignKey('drivers.id'))
     car_id = Column(Integer, ForeignKey('cars.id'))
-    car = relationship('Car', back_populates = 'reservations')
 
-    pickup_driver = Column(Integer, ForeignKey('drivers.id'))
-    pickup_by = relationship('Driver', back_populates = 'pickups')
-    
-    return_driver = Column(Integer, ForeignKey('drivers.id'))
-    return_by = relationship('Driver', back_populates = 'returns')
+    car = relationship('Car', back_populates = 'reservations')
+    pickup_by = relationship('Driver', primaryjoin = "Reservation.pickup_driver_id == Driver.id", foreign_keys="Reservation.pickup_driver_id")
+    return_by = relationship('Driver', primaryjoin = "Reservation.return_driver_id == Driver.id", foreign_keys="Reservation.return_driver_id")
 
     def __init__(self, date, pickup_at, return_at):
         self.date = date

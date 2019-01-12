@@ -7,8 +7,8 @@ class Driver(model.base.Base):
     id = Column(Integer, primary_key = True)
     name = Column(String(100), nullable = False)
 
-    pickups = relationship('Reservation', back_populates = "pickup_by")
-    returns = relationship('Reservation', back_populates = "return_by")
+    pickups = relationship('Reservation', back_populates = "pickup_by", foreign_keys="Reservation.pickup_driver_id")
+    returns = relationship('Reservation', back_populates = "return_by", foreign_keys="Reservation.return_driver_id")
 
     def __init__(self, name):
         self.name = name
