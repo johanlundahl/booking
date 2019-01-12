@@ -8,8 +8,9 @@ from com.http_status_code import HTTPStatusCode as http
 from com.answer import Send as send
 from db.orm import MyDb
 import config
+from flask_app import FlaskApp
 
-app = Flask(__name__)
+app = FlaskApp(__name__)
 db = MyDb(config.db_uri)
 
 @app.route('/api', methods=['GET'])
@@ -141,14 +142,13 @@ def api_customer_car_reservations(customer_id, car_id):
             return send.ok(car.reservations)
     elif request.method == 'POST':
         content = request.get_json()
-        if "date" in content and "pickup_at" in content and "return_at" in content:
+        if any([x in content for x in ['date', 'pickup_at', 'return_at']]):
             date =  content['date']
             pickup_at = content['pickup_at']
             return_at = content['return_at']
             reservation = Reservation(date, pickup_at, return_at)
             with db:
                 car = db.car(customer_id, car_id)
-                print('FOUND CAR:', car)
                 car.reservations.append(reservation)
             return send.created(reservation)
     else:
@@ -164,7 +164,7 @@ def api_customer_car_reservation(customer_id, car_id, reservation_id):
             return send.ok(reservation)
     elif request.method == 'PATCH':
         content = request.get_json()
-        if any([x in content for x in ['date', 'pickup_at', 'return_at']]):
+        if any([x in content for x in ['date', 'pickup_at', 'return_at', 'pickup_by', 'return_by', 'pickup_driver_id', 'return_driver_id']]):
             with db:
                 reservation = db.reservation(reservation_id)
                 if reservation is None:
@@ -172,6 +172,8 @@ def api_customer_car_reservation(customer_id, car_id, reservation_id):
                 reservation.date = content['date'] if 'date' in content else reservation.date
                 reservation.pickup_at = content['pickup_at'] if 'pickup_at' in content else reservation.pickup_at
                 reservation.return_at = content['return_at'] if 'return_at' in content else reservation.return_at
+                reservation.pickup_by = db.driver(content['pickup_driver_id']) if 'pickup_driver_id' in content else reservation.pickup_driver_id
+                reservation.return_by = db.driver(content['return_driver_id']) if 'return_driver_id' in content else reservation.return_driver_id
             return send.patched()
         else:
             return abort(http.BAD_REQUEST)
@@ -183,10 +185,16 @@ def api_customer_car_reservation(customer_id, car_id, reservation_id):
     else:
         return abort(http.FORBIDDEN)
 
+
 @app.route('/api/reservations', methods=['GET'])
 def api_reservations():
     if request.method == 'GET':
+        
+        print(any(['date' in x for x in request.args]))
+
         date = request.args.get('date')
+
+
         customer_id = request.args.get('customer_id', type=int)
         with db:
             reservations = db.reservations()
@@ -219,7 +227,7 @@ def api_drivers():
             return send.ok(drivers)
     elif request.method == 'POST':
         content = request.get_json()
-        if "name" not in content:
+        if 'name' not in content:
             return abort(http.BAD_REQUEST)
         driver = Driver(content['name'])
         with db:
@@ -251,16 +259,23 @@ def api_driver(driver_id):
     else:
         return abort(http.FORBIDDEN)
 
+@app.route('/', methods=['GET'])
+def root():
+    return render_template('index.html')
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
 
 
 # --- TODO ---
+# Method for getting querystring parameter
 # Add port as an input parameter
 # Add HTTPS
 # Add Basic Auth
 # template pattern???
 # pagination on /api/reservations and /api/cars?
 # make sure that reservation with id is child or car with id
-# /api/drivers
 # Add Users /api/users
+# Add permission levels (admin and user)
+
