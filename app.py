@@ -259,10 +259,22 @@ def api_driver(driver_id):
     else:
         return abort(http.FORBIDDEN)
 
+# HTML client
 @app.route('/', methods=['GET'])
 def root():
     return render_template('index.html')
 
+@app.route('/drivers', methods=['GET'])
+def drivers():
+    return render_template('drivers.html')
+
+@app.route('/customers', methods=['GET'])
+def customers():
+    return render_template('customers.html')
+
+@app.route('/reservations/<date>', methods=['GET'])
+def date(date):
+    return render_template('date.html', date= date)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
