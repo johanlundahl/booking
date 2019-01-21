@@ -1,0 +1,22 @@
+(% extends 'base.html' %)
+
+(% block title %)
+DATE
+(% endblock %)
+
+(% block content %)
+
+  <div id="app">
+    <h1>    
+      Reservations (( date ))
+    </h1>
+    <li v-for="booking of bookings">
+      <strong>{{booking.car_id}}, {{ booking.pickup_at }}</strong>
+      <return v-bind:booking="booking"></return>
+
+    </li>
+  </div>
+  <script src="(( url_for('static', filename='date.js') ))"></script>
+  <script> app.date = ((date)) </script>
+
+(% endblock %)

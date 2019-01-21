@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Drivers</title>
+    <!-- include vue -->
+    <script src="https://unpkg.com/vue"></script>
+    <!-- axios -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.15.3/axios.min.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <h1>    
+        Customers ({{posts.length}})
+      </h1>
+      <li v-for="post of posts">
+        <strong>{{post.name}}</strong>
+      </li>
+    </div>
+  </body>
+  <script src="(( url_for('static', filename='customers.js') ))"></script>
+</html>
