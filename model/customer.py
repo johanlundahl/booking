@@ -45,7 +45,3 @@ class Customer(model.base.Base):
 
     def __str__(self):
         return 'Customer({}, {})'.format(self.id, self.name)
-    
-    def __repr__(self):
-        parameters = ', '.join(['{}={}'.format(k, str(v)) for k, v in self.__dict__.items()])
-        return '{}({})'.format(self.__class__.__name__, parameters)

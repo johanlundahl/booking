@@ -23,9 +23,5 @@ class Driver(model.base.Base):
         del result['_sa_instance_state']
         return result
 
-    def __repr__(self):
-        parameters = ', '.join([str(v) for v in self.__dict__.values()])
-        return '{}({})'.format(self.__class__.__name__, parameters)
-
     def __str__(self):
         return 'Driver({}, {})'.format(self.id, self.name)

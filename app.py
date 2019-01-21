@@ -227,7 +227,8 @@ def api_drivers():
             return send.ok(drivers)
     elif request.method == 'POST':
         content = request.get_json()
-        if 'name' not in content:
+        if not Driver.validate(content):
+            #if 'name' not in content:
             return abort(http.BAD_REQUEST)
         driver = Driver(content['name'])
         with db:
@@ -281,6 +282,7 @@ if __name__ == '__main__':
 
 
 # --- TODO ---
+# Add ModelBase with validate, create, __repr__, ... (https://docs.sqlalchemy.org/en/latest/orm/extensions/declarative/mixins.html)
 # Add FlaskApp to git
 # Refactor config file so that properties are concatenated in code rather than in config
 # Method for getting querystring parameter
