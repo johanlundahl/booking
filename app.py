@@ -269,6 +269,8 @@ if __name__ == '__main__':
 
 
 # --- TODO ---
+# Add FlaskApp to git
+# Refactor config file so that properties are concatenated in code rather than in config
 # Method for getting querystring parameter
 # Add port as an input parameter
 # Add HTTPS
