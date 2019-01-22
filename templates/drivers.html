@@ -1,14 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>Drivers</title>
-    <!-- include vue -->
-    <script src="https://unpkg.com/vue"></script>
-    <!-- axios -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.15.3/axios.min.js"></script>
-  </head>
-  <body>
+(% extends 'base.html' %)
+
+(% block title %) Customers (% endblock %)
+
+(% block content %)
+
     <h1>    
       <post-count id="post-count"></post-count>
     </h1>
@@ -17,6 +12,6 @@
         <strong>{{post.name}}</strong>
       </li>
     </div>
-  </body>
   <script src="(( url_for('static', filename='drivers.js') ))"></script>
-</html>
+
+(% endblock %)
