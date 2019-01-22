@@ -49,13 +49,11 @@ def api_customer(customer_id):
         customer = db.customer(customer_id)
         if not customer:
             return abort(http.NOT_FOUND)
-
     if request.method == 'GET':
         customer = None
         with db:
             customer = db.customer(customer_id)
         return send.ok(customer)
-
     elif request.method == 'DELETE':
         with db:
             customer = db.customer(customer_id)
@@ -63,16 +61,10 @@ def api_customer(customer_id):
         return send.deleted()
     elif request.method == 'PUT':
         content = request.get_json()
-        if content and all(x in content for x in ['name', 'contact', 'company', 'email', 'phone', 'address', 'postal_code', 'city']):
+        if Customer.validate(content):
             with db:
                 customer = db.customer(customer_id)
-                customer.name = content['name']
-                customer.contact = content['contact']
-                customer.email = content['email']
-                customer.phone = content['phone']
-                customer.address = content['address']
-                customer.postal_code = content['postal_code']
-                customer.city = content['city']
+                customer.update(content)
                 return send.ok(customer)
         else:
             return abort(http.BAD_REQUEST)
@@ -102,7 +94,7 @@ def api_customer_cars(customer_id):
             return send.ok(customer.cars)
     elif request.method == 'POST':
         content = request.get_json()
-        if 'reg' in content:
+        if Car.validate(content):
             car = Car(content['reg'])
             with db:
                 customer = db.customer(customer_id)
@@ -142,11 +134,8 @@ def api_customer_car_reservations(customer_id, car_id):
             return send.ok(car.reservations)
     elif request.method == 'POST':
         content = request.get_json()
-        if any([x in content for x in ['date', 'pickup_at', 'return_at']]):
-            date =  content['date']
-            pickup_at = content['pickup_at']
-            return_at = content['return_at']
-            reservation = Reservation(date, pickup_at, return_at)
+        if Reservation.validate(content):
+            reservation = Reservation.create(content)
             with db:
                 car = db.car(customer_id, car_id)
                 car.reservations.append(reservation)
@@ -228,7 +217,6 @@ def api_drivers():
     elif request.method == 'POST':
         content = request.get_json()
         if not Driver.validate(content):
-            #if 'name' not in content:
             return abort(http.BAD_REQUEST)
         driver = Driver(content['name'])
         with db:
