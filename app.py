@@ -29,18 +29,16 @@ def api_customers():
             return send.ok(customers)
     elif request.method == 'POST':
         content = request.get_json()
-        if 'name' in content:
-            name = content['name']
-            contact = content['contact'] if 'contact' in content else ''
-            email = content['email'] if 'email' in content else ''
-            phone = content['phone'] if 'phone' in content else ''
-
-            customer = Customer(name, contact, phone, email)
+        if Customer.valid_create(content):
+            customer = Customer.create(content)
             with db:
                 db.add(customer)
             return send.created(customer)
+        else:
+            return abort(http.BAD_REQUEST)
     else:
-        return abort(http.BAD_REQUEST)
+        return abort(http.FORBIDDEN)
+
 
 @app.route('/api/customers/<customer_id>', methods=['GET', 'PUT', 'DELETE', 'PATCH'])
 def api_customer(customer_id):
@@ -61,7 +59,7 @@ def api_customer(customer_id):
         return send.deleted()
     elif request.method == 'PUT':
         content = request.get_json()
-        if Customer.validate(content):
+        if Customer.valid_create(content):
             with db:
                 customer = db.customer(customer_id)
                 customer.update(content)
@@ -70,16 +68,10 @@ def api_customer(customer_id):
             return abort(http.BAD_REQUEST)
     elif request.method == 'PATCH':
         content = request.get_json()
-        if content and any(x in content for x in ['name', 'contact', 'company', 'email', 'phone', 'address', 'postal_code', 'city']):
+        if Customer.valid_update(content):
             with db:
                 customer = db.customer(customer_id)
-                customer.name = content['name'] if 'name' in content else customer.name
-                customer.contact = content['contact'] if 'contact' in content else customer.contact
-                customer.email = content['email'] if 'email' in content else customer.email
-                customer.phone = content['phone'] if 'phone' in content else customer.phone
-                customer.address = content['address'] if 'address' in content else customer.address
-                customer.postal_code = content['postal_code'] if 'postal_code' in content else customer.postal_code
-                customer.city = content['city'] if 'city' in content else customer.city
+                customer.update(content)
                 return send.patched()
         else:
             return abort(http.BAD_REQUEST)
@@ -94,8 +86,8 @@ def api_customer_cars(customer_id):
             return send.ok(customer.cars)
     elif request.method == 'POST':
         content = request.get_json()
-        if Car.validate(content):
-            car = Car(content['reg'])
+        if Car.valid_create(content):
+            car = Car.create(content)
             with db:
                 customer = db.customer(customer_id)
                 db.add(car)
@@ -116,10 +108,10 @@ def api_customer_car(customer_id, car_id):
             return send.ok(car)
     elif request.method == 'PATCH':
         content = request.get_json()
-        if 'reg' in content:
+        if Car.valid_update(content):
             with db:
                 car = db.car(customer_id, car_id)
-                car.reg = content['reg'] if 'reg' in content else car.reg
+                car.update(content)
             return send.patched()
     else:
         return abort(http.FORBIDDEN)
@@ -134,7 +126,7 @@ def api_customer_car_reservations(customer_id, car_id):
             return send.ok(car.reservations)
     elif request.method == 'POST':
         content = request.get_json()
-        if Reservation.validate(content):
+        if Reservation.valid_create(content):
             reservation = Reservation.create(content)
             with db:
                 car = db.car(customer_id, car_id)
@@ -153,16 +145,14 @@ def api_customer_car_reservation(customer_id, car_id, reservation_id):
             return send.ok(reservation)
     elif request.method == 'PATCH':
         content = request.get_json()
-        if any([x in content for x in ['date', 'pickup_at', 'return_at', 'pickup_by', 'return_by', 'pickup_driver_id', 'return_driver_id']]):
+        if Reservation.valid_update(content):
             with db:
                 reservation = db.reservation(reservation_id)
                 if reservation is None:
                     return '', http.NOT_FOUND
-                reservation.date = content['date'] if 'date' in content else reservation.date
-                reservation.pickup_at = content['pickup_at'] if 'pickup_at' in content else reservation.pickup_at
-                reservation.return_at = content['return_at'] if 'return_at' in content else reservation.return_at
-                reservation.pickup_by = db.driver(content['pickup_driver_id']) if 'pickup_driver_id' in content else reservation.pickup_driver_id
-                reservation.return_by = db.driver(content['return_driver_id']) if 'return_driver_id' in content else reservation.return_driver_id
+                reservation.update(content)
+                reservation.pickup_by = db.driver(content['pickup_driver_id']) if 'pickup_driver_id' in content else reservation.pickup_by
+                reservation.return_by = db.driver(content['return_driver_id']) if 'return_driver_id' in content else reservation.return_by
             return send.patched()
         else:
             return abort(http.BAD_REQUEST)
@@ -180,9 +170,8 @@ def api_reservations():
     if request.method == 'GET':
         
         print(any(['date' in x for x in request.args]))
-
+        ### TODO ###
         date = request.args.get('date')
-
 
         customer_id = request.args.get('customer_id', type=int)
         with db:
@@ -216,9 +205,9 @@ def api_drivers():
             return send.ok(drivers)
     elif request.method == 'POST':
         content = request.get_json()
-        if not Driver.validate(content):
+        if not Driver.valid_create(content):
             return abort(http.BAD_REQUEST)
-        driver = Driver(content['name'])
+        driver = Driver.create(content)
         with db:
             db.add(driver)
         return send.created(driver)    
@@ -239,11 +228,11 @@ def api_driver(driver_id):
         return send.deleted()
     elif request.method == 'PATCH':
         content = request.get_json()
-        if 'name' not in content:
+        if not Driver.valid_update(content):
             return abort(http.BAD_REQUEST)
         with db:
             driver = db.driver(driver_id)
-            driver.name = content['name']
+            driver.update(content)
         return send.patched()
     else:
         return abort(http.FORBIDDEN)

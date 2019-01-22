@@ -6,10 +6,14 @@ class ModelBase():
         return 'BASE {}({})'.format(self.__class__.__name__, parameters)
 
     @classmethod
-    def validate(cls, dict):
+    def valid_create(cls, dict):
         required = cls.__init__.__code__.co_varnames
-        print(required)
         return all(k in dict.keys() for k in required if k not in ['self', 'new_state'])
+
+    @classmethod
+    def valid_update(cls, dict):
+        required = cls.__init__.__code__.co_varnames
+        return any(k in dict.keys() for k in required if k not in ['self', 'new_state'])
 
     @classmethod
     def create(cls, dict):
