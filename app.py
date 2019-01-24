@@ -305,12 +305,14 @@ if __name__ == '__main__':
 
 
 # --- TODO ---
+# Add Basic Auth
+# Add permission levels (admin and user) 
+#   https://stackoverflow.com/questions/15871391/implementing-flask-login-with-multiple-user-classes
+#   http://blog.tecladocode.com/learn-python-defining-user-access-roles-in-flask/
+#   https://realpython.com/using-flask-login-for-user-management-with-flask/
 # Method for getting querystring parameter
 # Add port as an input parameter
 # Add HTTPS
-# Add Basic Auth
 # template pattern???
 # pagination on /api/reservations and /api/cars?
 # make sure that reservation with id is child or car with id
-# Add Users /api/users
-# Add permission levels (admin and user)
