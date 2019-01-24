@@ -1,9 +1,9 @@
 # http://blog.tecladocode.com/learn-python-defining-user-access-roles-in-flask/
 
 from sqlalchemy import Column, String, Integer, Boolean
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, validates
 import model.base
-
+from passlib.hash import pbkdf2_sha256 as sha256
 
 ACCESS_LEVEL = {'none': 0, 'user': 1, 'admin': 2}
 
@@ -21,10 +21,15 @@ class User(model.base.Base):
         self.password = password
         self.access_level = ACCESS_LEVEL['none']
 
-    def is_admin(self):
-        return self.access_level == ACCESS_LEVEL['admin']
+    @validates('password')
+    def validate_password(self, key, password):
+        print('Setting password...')
+        return sha256.hash(password)
 
-    def allowed(self, access_level):
+    def authenticate(self, password):
+        return sha256.verify(password, self.password)
+
+    def authorize(self, access_level):
         return self.access_level >= access_level
 
     def to_json(self):
