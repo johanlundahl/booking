@@ -1,3 +1,4 @@
 flask
 sqlalchemy
 git+https://github.com/johanlundahl/pytils.git
+passlib
