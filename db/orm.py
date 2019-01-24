@@ -5,6 +5,7 @@ from model.car import Car
 from model.customer import Customer
 from model.reservation import Reservation
 from model.driver import Driver
+from model.user import User
 
 class MyDb():
     def __init__(self, uri):
@@ -50,3 +51,9 @@ class MyDb():
 
     def driver(self, driver_id):
         return self.session.query(Driver).filter_by(id=driver_id).first()
+
+    def users(self):
+        return self.session.query(User).all()
+
+    def user(self, user_id):
+        return self.session.query(User).filter_by(id=user_id).first()

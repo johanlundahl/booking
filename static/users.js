@@ -1,0 +1,24 @@
+new Vue({
+    el: '#app',
+    created() {
+        this.fetchData();
+        this.interval = setInterval(function () {
+            this.fetchData();
+        }.bind(this), 10000);
+    },
+    data: {
+        users: [],
+        interval: null,
+    },
+    methods: {
+        fetchData() {
+            axios.get('http://localhost:5000/api/users').then(response => {
+                this.users = response.data;
+            });
+        }
+    },
+
+    beforeDestroy: function(){
+        clearInterval(this.interval);
+    }
+});

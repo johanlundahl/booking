@@ -7,6 +7,7 @@ from model.car import Car
 from model.customer import Customer
 from model.reservation import Reservation
 from model.driver import Driver
+from model.user import User
 import config
 
 uri = config.db_uri

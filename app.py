@@ -3,6 +3,7 @@ from model.customer import Customer
 from model.car import Car
 from model.reservation import Reservation
 from model.driver import Driver
+from model.user import User
 from com.jsoncoder import Encoder
 from com.http_status_code import HTTPStatusCode as http
 from com.answer import Send as send
@@ -172,7 +173,6 @@ def api_reservations():
         print(any(['date' in x for x in request.args]))
         ### TODO ###
         date = request.args.get('date')
-
         customer_id = request.args.get('customer_id', type=int)
         with db:
             reservations = db.reservations()
@@ -237,6 +237,47 @@ def api_driver(driver_id):
     else:
         return abort(http.FORBIDDEN)
 
+@app.route('/api/users', methods=['GET', 'POST'])
+def api_users():
+    if request.method == 'GET':
+        with db:
+            users = db.users()
+            return send.ok(users)
+    elif request.method == 'POST':
+        content = request.get_json()
+        if not User.valid_create(content):
+            return abort(http.BAD_REQUEST)
+        user = User.create(content)
+        with db:
+            db.add(user)
+        return send.created(user)    
+    else:
+        return abort(http.FORBIDDEN)
+
+@app.route('/api/users/<int:user_id>', methods=['GET', 'DELETE', 'PATCH'])
+def api_user(user_id):
+    if request.method == 'GET':
+        user = None
+        with db:
+            user = db.user(user_id)
+        return send.ok(user)
+    elif request.method == 'DELETE':
+        with db:
+            user = db.user(user_id)
+            db.delete(user)
+        return send.deleted()
+    elif request.method == 'PATCH':
+        content = request.get_json()
+        if not User.valid_update(content):
+            return abort(http.BAD_REQUEST)
+        with db:
+            user = db.user(user_id)
+            user.update(content)
+        return send.patched()
+    else:
+        return abort(http.FORBIDDEN)
+
+
 # HTML client
 @app.route('/', methods=['GET'])
 def root():
@@ -254,12 +295,16 @@ def customers():
 def date(date):
     return render_template('date.html', date= date)
 
+@app.route('/users', methods=['GET'])
+def users():
+    return render_template('users.html')
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
 
 
 # --- TODO ---
-# Refactor config file so that properties are concatenated in code rather than in config
 # Method for getting querystring parameter
 # Add port as an input parameter
 # Add HTTPS
@@ -269,4 +314,3 @@ if __name__ == '__main__':
 # make sure that reservation with id is child or car with id
 # Add Users /api/users
 # Add permission levels (admin and user)
-

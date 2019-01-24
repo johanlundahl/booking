@@ -1,0 +1,15 @@
+(% extends 'base.html' %)
+
+(% block title %) Users (% endblock %)
+
+(% block content %)
+
+    <h1>Users</h1>
+    <div id="app">
+      <li v-for="user of users">
+        <strong>{{user.name}}</strong>
+      </li>
+    </div>
+  <script src="(( url_for('static', filename='users.js') ))"></script>
+
+(% endblock %)
