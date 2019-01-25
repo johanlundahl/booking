@@ -1,4 +1,5 @@
-from flask import Flask, render_template, url_for, redirect, send_file, jsonify, abort, request, json, Response
+from flask import Flask, render_template, url_for, redirect, send_file, jsonify, abort, request, json, Response, flash
+from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from model.customer import Customer
 from model.car import Car
 from model.reservation import Reservation
@@ -12,7 +13,15 @@ import config
 from flask_app import FlaskApp
 
 app = FlaskApp(__name__)
+app.secret_key = 'XkLU0VP5fmj8XTqQTHiORJ63zZcoJl'
+login = LoginManager(app)
+login.login_view = 'login'
 db = MyDb(config.db_uri)
+
+@login.user_loader
+def load_user(id):
+    with db:
+        return db.user(int(id))
 
 @app.route('/api', methods=['GET'])
 def api_root():
@@ -279,23 +288,54 @@ def api_user(user_id):
 
 
 # HTML client
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'GET':
+        if current_user.is_authenticated:
+            return redirect(url_for('login'))
+        next = '?next={}'.format(request.args.get('next')) if 'next' in request.args else ''
+        return render_template('login.html', next=next)
+    if request.method == 'POST' and all(x in request.form for x in ['username', 'password']):
+        username = request.form['username']
+        password = request.form['password']
+        user = db.user_by_username(username)
+        if user is None or not user.authenticate(password):
+            flash('Invalid username or password')
+            return redirect(url_for('login'))
+        login_user(user)
+        next_page = request.args.get('next')
+        print(next_page)
+        if not next_page:
+            next_page = url_for('root')
+        return redirect(next_page)
+
+@app.route('/logout', methods=['GET'])
+def logout():
+    logout_user()
+    return redirect(url_for('root'))
+
 @app.route('/', methods=['GET'])
+@login_required
 def root():
     return render_template('index.html')
 
 @app.route('/drivers', methods=['GET'])
+@login_required
 def drivers():
     return render_template('drivers.html')
 
 @app.route('/customers', methods=['GET'])
+@login_required
 def customers():
     return render_template('customers.html')
 
 @app.route('/reservations/<date>', methods=['GET'])
+@login_required
 def date(date):
     return render_template('date.html', date= date)
 
 @app.route('/users', methods=['GET'])
+@login_required
 def users():
     return render_template('users.html')
 
@@ -305,6 +345,7 @@ if __name__ == '__main__':
 
 
 # --- TODO ---
+# Flash messages: http://flask.pocoo.org/docs/1.0/patterns/flashing/
 # Add Basic Auth
 # Add permission levels (admin and user) 
 #   https://stackoverflow.com/questions/15871391/implementing-flask-login-with-multiple-user-classes

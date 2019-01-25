@@ -57,3 +57,6 @@ class MyDb():
 
     def user(self, user_id):
         return self.session.query(User).filter_by(id=user_id).first()
+
+    def user_by_username(self, username):
+        return self.session.query(User).filter_by(name=username).first()
