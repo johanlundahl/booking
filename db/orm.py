@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from sqlalchemy import create_engine, and_
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 from model.car import Car
 from model.customer import Customer
 from model.reservation import Reservation
@@ -10,14 +10,16 @@ from model.user import User
 class MyDb():
     def __init__(self, uri):
         self.engine = create_engine(uri)
-        self.DBSession = sessionmaker(bind=self.engine)
-        self.session = self.DBSession()
+        #self.DBSession = sessionmaker(bind=self.engine)
+        #self.session = self.DBSession()
+        self.session = scoped_session(sessionmaker(bind=self.engine))
 
     def __enter__(self):
-        pass
+        self.session()
 
     def __exit__(self, *args):
         self.session.commit()
+        self.session.remove()
 
     def add(self, item):
         self.session.add(item)
