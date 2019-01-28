@@ -4,13 +4,22 @@
 
 (% block content %)
 
-    <h1>    
-      <post-count id="post-count"></post-count>
-    </h1>
+    <h1>Drivers</h1>
     <div id="app">
-      <li v-for="post of posts">
-        <strong>{{post.name}}</strong>
-      </li>
+    	<table class="table table-striped">
+			<thead>
+		    	<tr>
+		      		<th scope="col">Id</th>
+		      		<th scope="col">Namn</th>
+		    	</tr>
+		  	</thead>
+		  	<tbody>
+		    	<tr v-for="driver of drivers">
+		      		<td>{{ driver.id }}</td>
+		      		<td>{{ driver.name }}</td>
+		    	</tr>
+      		</tbody>
+  		</table>
     </div>
   <script src="(( url_for('static', filename='drivers.js') ))"></script>
 
