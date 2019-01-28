@@ -10,8 +10,6 @@ from model.user import User
 class MyDb():
     def __init__(self, uri):
         self.engine = create_engine(uri)
-        #self.DBSession = sessionmaker(bind=self.engine)
-        #self.session = self.DBSession()
         self.session = scoped_session(sessionmaker(bind=self.engine))
 
     def __enter__(self):
