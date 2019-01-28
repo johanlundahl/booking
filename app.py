@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, redirect, send_file, jsonify, abort, request, json, Response, flash
+from flask import Flask, render_template, url_for, redirect, send_file, jsonify, abort, request, json, Response, flash, session
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from model.customer import Customer
 from model.car import Car
@@ -21,7 +21,10 @@ db = MyDb(config.db_uri)
 @login.user_loader
 def load_user(id):
     with db:
-        return db.user(int(id))
+        user = db.user(int(id))
+        session['username'] = user.name
+        session['email'] = user.email
+        return user
 
 @app.route('/api', methods=['GET'])
 def api_root():
@@ -161,8 +164,9 @@ def api_customer_car_reservation(customer_id, car_id, reservation_id):
                 if reservation is None:
                     return '', http.NOT_FOUND
                 reservation.update(content)
-                reservation.pickup_by = db.driver(content['pickup_driver_id']) if 'pickup_driver_id' in content else reservation.pickup_by
-                reservation.return_by = db.driver(content['return_driver_id']) if 'return_driver_id' in content else reservation.return_by
+                #reservation.pickup_by = db.driver(content['pickup_driver_id']) if 'pickup_driver_id' in content else reservation.pickup_by
+                #reservation.return_by = db.driver(content['return_driver_id']) if 'return_driver_id' in content else reservation.return_by
+            print('Pickup:', reservation.pickup_driver_id, reservation.pickup_by)
             return send.patched()
         else:
             return abort(http.BAD_REQUEST)
@@ -298,16 +302,18 @@ def login():
     if request.method == 'POST' and all(x in request.form for x in ['username', 'password']):
         username = request.form['username']
         password = request.form['password']
-        user = db.user_by_username(username)
-        if user is None or not user.authenticate(password):
-            flash('Invalid username or password')
-            return redirect(url_for('login'))
-        login_user(user)
-        next_page = request.args.get('next')
-        print(next_page)
-        if not next_page:
-            next_page = url_for('root')
-        return redirect(next_page)
+        with db:
+            user = db.user_by_username(username)
+            if user is None or not user.authenticate(password):
+                flash('Invalid username or password')
+                return redirect(url_for('login'))
+            login_user(user)
+            next_page = request.args.get('next')
+            print(next_page)
+            if not next_page:
+                next_page = url_for('root')
+            return redirect(next_page)
+        return redirect(url_for('login'))
 
 @app.route('/logout', methods=['GET'])
 def logout():
