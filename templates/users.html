@@ -5,10 +5,46 @@
 (% block content %)
 
     <h1>Users</h1>
+
+    <div class="container">
+	<form id="add-form">
+		<div class="form-group row">
+	        <label for="name" class="col-sm-2 col-form-label">Name</label>
+	        <div class="col-sm-10">
+	    		<input type="text" class="form-control form-control-lg" id="name" name="name" v-model="name">
+	    	</div>
+	    </div>
+	    <div class="form-group row">
+	        <label for="name" class="col-sm-2 col-form-label">Email</label>
+	        <div class="col-sm-10">
+	    		<input type="email" class="form-control form-control-lg" id="email" name="email" v-model="email">
+	    	</div>
+	    </div>
+	    <div class="form-group row">
+	    	<div class="col-sm-2"></div>
+	    	<div class="col-sm-10">
+				<button @click="processForm" class="btn btn-primary btn-block form-control-lg">Add</button>
+			</div>
+	    </div>
+	</form>
+	</div>
     <div id="app">
-      <li v-for="user of users">
-        <strong>{{user.name}}</strong>
-      </li>
+    	<table class="table table-striped">
+			<thead>
+		    	<tr>
+		      		<th scope="col">Id</th>
+		      		<th scope="col">Namn</th>
+		      		<th scope="col">Email</th>
+		    	</tr>
+		  	</thead>
+		  	<tbody>
+		    	<tr v-for="user of users">
+		      		<td>{{ user.id }}</td>
+		      		<td>{{ user.name }}</td>
+		      		<td>{{ user.email }}</td>
+		    	</tr>
+      		</tbody>
+  		</table>
     </div>
   <script src="(( url_for('static', filename='users.js') ))"></script>
 

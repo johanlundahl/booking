@@ -22,3 +22,21 @@ new Vue({
         clearInterval(this.interval);
     }
 });
+
+new Vue({
+  el: '#add-form',
+  data: {
+    name: '',
+    email: ''
+  },
+  methods: {
+    processForm: function() {
+        console.log({ name: this.name, email: this.email });
+        axios.post('/api/users', { "name": this.name, "email": this.email, "password": "12345"})
+        .then(response => {})
+        .catch(e => {
+            console.log(e)
+        });
+    }
+  }
+});
