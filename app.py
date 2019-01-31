@@ -1,5 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, send_file, jsonify, abort, request, json, Response, flash, session
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
+from functools import wraps
 from model.customer import Customer
 from model.car import Car
 from model.reservation import Reservation
@@ -20,11 +21,22 @@ db = MyDb(config.db_uri)
 
 @login.user_loader
 def load_user(id):
-    with db:
-        user = db.user(int(id))
-        session['username'] = user.name
-        session['email'] = user.email
-        return user
+    user = db.user(int(id))
+    session['username'] = user.name
+    session['email'] = user.email
+    return user
+
+def requires_access_level(access_level):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs): 
+            with db:
+                user = db.user_by_username(session['username'])
+                if not user.authorize(access_level):
+                    return "You do not have access to that page. Sorry!", http.NOT_AUTHORIZED
+                return f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
 @app.route('/api', methods=['GET'])
 def api_root():
@@ -46,7 +58,7 @@ def api_customers():
             customer = Customer.create(content)
             with db:
                 db.add(customer)
-            return send.created(customer)
+                return send.created(customer)
         else:
             return abort(http.BAD_REQUEST)
     else:
@@ -64,12 +76,12 @@ def api_customer(customer_id):
         customer = None
         with db:
             customer = db.customer(customer_id)
-        return send.ok(customer)
+            return send.ok(customer)
     elif request.method == 'DELETE':
         with db:
             customer = db.customer(customer_id)
             db.delete(customer)
-        return send.deleted()
+            return send.deleted()
     elif request.method == 'PUT':
         content = request.get_json()
         if Customer.valid_create(content):
@@ -105,7 +117,7 @@ def api_customer_cars(customer_id):
                 customer = db.customer(customer_id)
                 db.add(car)
                 customer.cars.append(car)
-            return send.created(car)
+                return send.created(car)
         else:
             return abort(http.BAD_REQUEST)
     else:
@@ -125,7 +137,7 @@ def api_customer_car(customer_id, car_id):
             with db:
                 car = db.car(customer_id, car_id)
                 car.update(content)
-            return send.patched()
+                return send.patched()
     else:
         return abort(http.FORBIDDEN)
 
@@ -144,7 +156,7 @@ def api_customer_car_reservations(customer_id, car_id):
             with db:
                 car = db.car(customer_id, car_id)
                 car.reservations.append(reservation)
-            return send.created(reservation)
+                return send.created(reservation)
     else:
         return abort(http.FORBIDDEN)
 
@@ -166,8 +178,8 @@ def api_customer_car_reservation(customer_id, car_id, reservation_id):
                 reservation.update(content)
                 #reservation.pickup_by = db.driver(content['pickup_driver_id']) if 'pickup_driver_id' in content else reservation.pickup_by
                 #reservation.return_by = db.driver(content['return_driver_id']) if 'return_driver_id' in content else reservation.return_by
-            print('Pickup:', reservation.pickup_driver_id, reservation.pickup_by)
-            return send.patched()
+                print('Pickup:', reservation.pickup_driver_id, reservation.pickup_by)
+                return send.patched()
         else:
             return abort(http.BAD_REQUEST)
     elif request.method == 'DELETE':
@@ -223,7 +235,7 @@ def api_drivers():
         driver = Driver.create(content)
         with db:
             db.add(driver)
-        return send.created(driver)    
+            return send.created(driver)    
     else:
         return abort(http.FORBIDDEN)
 
@@ -233,12 +245,12 @@ def api_driver(driver_id):
         driver = None
         with db:
             driver = db.driver(driver_id)
-        return send.ok(driver)
+            return send.ok(driver)
     elif request.method == 'DELETE':
         with db:
             driver = db.driver(driver_id)
             db.delete(driver)
-        return send.deleted()
+            return send.deleted()
     elif request.method == 'PATCH':
         content = request.get_json()
         if not Driver.valid_update(content):
@@ -246,7 +258,7 @@ def api_driver(driver_id):
         with db:
             driver = db.driver(driver_id)
             driver.update(content)
-        return send.patched()
+            return send.patched()
     else:
         return abort(http.FORBIDDEN)
 
@@ -263,7 +275,7 @@ def api_users():
         user = User.create(content)
         with db:
             db.add(user)
-        return send.created(user)    
+            return send.created(user)    
     else:
         return abort(http.FORBIDDEN)
 
@@ -273,12 +285,12 @@ def api_user(user_id):
         user = None
         with db:
             user = db.user(user_id)
-        return send.ok(user)
+            return send.ok(user)
     elif request.method == 'DELETE':
         with db:
             user = db.user(user_id)
             db.delete(user)
-        return send.deleted()
+            return send.deleted()
     elif request.method == 'PATCH':
         content = request.get_json()
         if not User.valid_update(content):
@@ -286,7 +298,7 @@ def api_user(user_id):
         with db:
             user = db.user(user_id)
             user.update(content)
-        return send.patched()
+            return send.patched()
     else:
         return abort(http.FORBIDDEN)
 
@@ -309,7 +321,6 @@ def login():
                 return redirect(url_for('login'))
             login_user(user)
             next_page = request.args.get('next')
-            print(next_page)
             if not next_page:
                 next_page = url_for('root')
             return redirect(next_page)
@@ -318,6 +329,7 @@ def login():
 @app.route('/logout', methods=['GET'])
 def logout():
     logout_user()
+    session.clear()
     return redirect(url_for('root'))
 
 @app.route('/', methods=['GET'])
@@ -327,21 +339,32 @@ def root():
 
 @app.route('/drivers', methods=['GET'])
 @login_required
+@requires_access_level(1)
 def drivers():
     return render_template('drivers.html')
 
 @app.route('/customers', methods=['GET'])
 @login_required
+@requires_access_level(1)
 def customers():
     return render_template('customers.html')
 
+@app.route('/reservations', methods=['GET'])
+@login_required
+@requires_access_level(1)
+def date(date):
+    
+    return render_template('date.html', date= date)
+
 @app.route('/reservations/<date>', methods=['GET'])
 @login_required
+@requires_access_level(1)
 def date(date):
     return render_template('date.html', date= date)
 
 @app.route('/users', methods=['GET'])
 @login_required
+@requires_access_level(2)
 def users():
     return render_template('users.html')
 
@@ -351,12 +374,6 @@ if __name__ == '__main__':
 
 
 # --- TODO ---
-# Flash messages: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-# Add Basic Auth
-# Add permission levels (admin and user) 
-#   https://stackoverflow.com/questions/15871391/implementing-flask-login-with-multiple-user-classes
-#   http://blog.tecladocode.com/learn-python-defining-user-access-roles-in-flask/
-#   https://realpython.com/using-flask-login-for-user-management-with-flask/
 # Method for getting querystring parameter
 # Add port as an input parameter
 # Add HTTPS

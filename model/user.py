@@ -16,11 +16,11 @@ class User(model.base.Base, UserMixin):
     password = Column(String(100), nullable = False)
     access_level = Column(Integer, nullable = False)
 
-    def __init__(self, name, email, password):
+    def __init__(self, name, email, password, access_level=ACCESS_LEVEL['none']):
         self.name = name
         self.email = email
         self.password = password
-        self.access_level = ACCESS_LEVEL['none']
+        self.access_level = access_level
 
     @validates('password')
     def validate_password(self, key, password):
